@@ -4,7 +4,7 @@ from streamrip.metadata.search_results import AlbumSummary, TrackSummary
 
 
 def test_album_summary_with_year():
-    """Test that album summary includes year prefix."""
+    """Test that album summary includes year suffix."""
     album = AlbumSummary(
         id="12345",
         name="Test Album",
@@ -13,13 +13,13 @@ def test_album_summary_with_year():
         date_released="2023-05-15",
     )
     summary = album.summarize()
-    assert summary.startswith("2023 - ")
+    assert "(2023)" in summary
     assert "Test Album" in summary
     assert "Test Artist" in summary
 
 
 def test_album_summary_with_unknown_year():
-    """Test that album summary handles Unknown date gracefully."""
+    """Test that Unknown year is omitted from display."""
     album = AlbumSummary(
         id="12345",
         name="Test Album",
@@ -28,12 +28,12 @@ def test_album_summary_with_unknown_year():
         date_released="Unknown",
     )
     summary = album.summarize()
-    assert summary.startswith("Unknown - ")
-    assert "Test Album" in summary
+    assert summary == "Test Album by Test Artist"
+    assert "Unknown" not in summary
 
 
 def test_album_summary_with_none_date():
-    """Test that album summary handles None date gracefully."""
+    """Test that None date shows no year."""
     album = AlbumSummary(
         id="12345",
         name="Test Album",
@@ -42,7 +42,7 @@ def test_album_summary_with_none_date():
         date_released=None,
     )
     summary = album.summarize()
-    assert summary.startswith("Unknown - ")
+    assert summary == "Test Album by Test Artist"
 
 
 def test_album_summary_format():
@@ -55,7 +55,7 @@ def test_album_summary_format():
         date_released="1977-02-04",
     )
     summary = album.summarize()
-    assert summary == "1977 - Rumours by Fleetwood Mac"
+    assert summary == "Rumours (1977) by Fleetwood Mac"
 
 
 def test_album_preview_unchanged():
