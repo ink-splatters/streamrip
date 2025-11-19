@@ -115,6 +115,8 @@ class AlbumSummary(Summary):
     artist: str
     num_tracks: str
     date_released: str | None
+    bit_depth: int | None = None
+    sampling_rate: int | float | None = None
 
     def media_type(self):
         return "album"
@@ -128,7 +130,29 @@ class AlbumSummary(Summary):
         return f"{year_prefix} - {clean(self.name)} by {clean(self.artist)}"
 
     def preview(self) -> str:
-        return f"Date released:\n{self.date_released}\n\n{self.num_tracks} Tracks\n\nID: {self.id}"
+        # Format audio quality information
+        quality_info = ""
+        if self.sampling_rate and self.bit_depth:
+            # Convert sampling rate to kHz for display
+            sr_khz = (
+                self.sampling_rate / 1000
+                if self.sampling_rate >= 1000
+                else self.sampling_rate
+            )
+            quality_info = (
+                f"\n\nAudio Quality:\n{sr_khz:.1f} kHz / {self.bit_depth}-bit"
+            )
+        elif self.sampling_rate:
+            sr_khz = (
+                self.sampling_rate / 1000
+                if self.sampling_rate >= 1000
+                else self.sampling_rate
+            )
+            quality_info = f"\n\nSampling Rate: {sr_khz:.1f} kHz"
+        elif self.bit_depth:
+            quality_info = f"\n\nBit Depth: {self.bit_depth}-bit"
+
+        return f"Date released:\n{self.date_released}\n\n{self.num_tracks} Tracks{quality_info}\n\nID: {self.id}"
 
     @classmethod
     def from_item(cls, item: dict):
@@ -163,7 +187,14 @@ class AlbumSummary(Summary):
             or item.get("year")
             or "Unknown"
         )
-        return cls(id, name, artist, str(num_tracks), date_released)
+
+        # Extract audio quality information (may not be available in all search responses)
+        bit_depth = item.get("maximum_bit_depth") or item.get("bit_depth")
+        sampling_rate = item.get("maximum_sampling_rate") or item.get("sampling_rate")
+
+        return cls(
+            id, name, artist, str(num_tracks), date_released, bit_depth, sampling_rate
+        )
 
 
 @dataclass(slots=True)
