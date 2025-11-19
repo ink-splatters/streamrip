@@ -120,7 +120,12 @@ class AlbumSummary(Summary):
         return "album"
 
     def summarize(self) -> str:
-        return f"{clean(self.name)} by {clean(self.artist)}"
+        year_prefix = (
+            self.date_released[:4]
+            if self.date_released and self.date_released != "Unknown"
+            else "Unknown"
+        )
+        return f"{year_prefix} - {clean(self.name)} by {clean(self.artist)}"
 
     def preview(self) -> str:
         return f"Date released:\n{self.date_released}\n\n{self.num_tracks} Tracks\n\nID: {self.id}"
